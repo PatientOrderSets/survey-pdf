@@ -1,4 +1,4 @@
-import { jsPDF, jsPDFOptions } from 'jspdf';
+import { jsPDF, jsPDFOptions, EncryptionOptions } from 'jspdf';
 import { IHTMLRenderType } from './flat_layout/flat_html';
 import { SurveyHelper } from './helper_survey';
 import { LocalizableString } from 'survey-core';
@@ -219,6 +219,11 @@ export interface IDocOptions {
      * Default value: `false` (include all choices)
      */
     tagboxSelectedChoicesOnly?: boolean;
+
+    /**
+     * Specifies settings to password protect document.
+     */
+    encryption?: EncryptionOptions;
 }
 
 export class DocOptions implements IDocOptions {
@@ -242,6 +247,7 @@ export class DocOptions implements IDocOptions {
     protected _useLegacyBooleanRendering: boolean
     protected _isRTL: boolean;
     protected _tagboxSelectedChoicesOnly: boolean;
+    protected _encryption: EncryptionOptions;
     public constructor(options: IDocOptions) {
         if (typeof options.orientation === 'undefined') {
             if (typeof options.format === 'undefined' ||
@@ -304,6 +310,7 @@ export class DocOptions implements IDocOptions {
         this._useLegacyBooleanRendering = options.useLegacyBooleanRendering || false;
         this._isRTL = options.isRTL || false;
         this._tagboxSelectedChoicesOnly = options.tagboxSelectedChoicesOnly || false;
+        this._encryption = options.encryption;
     }
     public get leftTopPoint(): IPoint {
         return {
@@ -359,6 +366,9 @@ export class DocOptions implements IDocOptions {
     public get tagboxSelectedChoicesOnly(): boolean {
         return this._tagboxSelectedChoicesOnly;
     }
+    public get encryption(): EncryptionOptions {
+        return this._encryption;
+    }
 }
 
 /**
@@ -377,7 +387,8 @@ export class DocController extends DocOptions {
             orientation: this.orientation,
             unit: 'pt',
             format: this.format,
-            compress: this.compress
+            compress: this.compress,
+            encryption: this.encryption
         };
         this._doc = new jsPDF(jspdfOptions);
         if (typeof this.base64Normal !== 'undefined' && !SurveyHelper.isFontExist(this, this.fontName)) {
